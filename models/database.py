@@ -11,6 +11,13 @@ from sqlalchemy.pool import StaticPool
 # Determinar URL de base de datos
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./database/evaluai.db")
 
+# Crear directorio para SQLite si no existe
+if DATABASE_URL.startswith("sqlite"):
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    db_dir = os.path.dirname(db_path)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+
 # Configurar engine según tipo de BD
 if DATABASE_URL.startswith("sqlite"):
     # SQLite - para desarrollo local
