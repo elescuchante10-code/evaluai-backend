@@ -8,11 +8,11 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from agent_squad.orchestrator import AgentSquad
-from agent_squad.storage import SQLChatStorage
+from agent_squad.storage import InMemoryChatStorage
 
 from agents.kimi_agent import KimiAgent, KimiAgentOptions
-from agents.parser_agent import DocumentParserAgent, AgentOptions as ParserOptions
-from agents.segmenter_agent import SegmenterAgent, AgentOptions as SegmenterOptions
+from agents.parser_agent import DocumentParserAgent
+from agents.segmenter_agent import SegmenterAgent
 
 from models.user import User
 from models.evaluation import Evaluation
@@ -25,9 +25,8 @@ class EvaluationService:
         self.db = db
         self.storage_path = os.getenv("STORAGE_PATH", "./storage")
         
-        # Inicializar orquestador AgentSquad
-        storage = SQLChatStorage(connection_string=os.getenv("DATABASE_URL"))
-        self.orchestrator = AgentSquad(storage=storage)
+        # Inicializar orquestador AgentSquad (con storage en memoria)
+        self.orchestrator = AgentSquad(storage=InMemoryChatStorage())
         
         # Agregar agentes
         self._setup_agents()

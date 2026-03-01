@@ -5,7 +5,7 @@ import re
 from typing import List, Dict, Optional
 from dataclasses import dataclass
 
-from agent_squad.agents import Agent, AgentOptions
+from agent_squad.agents import Agent
 from agent_squad.types import ConversationMessage, ParticipantRole
 from agent_squad.utils import Logger
 
@@ -52,7 +52,7 @@ class SegmenterAgent(Agent):
         "generico": []  # Divide por párrafos
     }
     
-    def __init__(self, options: AgentOptions):
+    def __init__(self, options):
         super().__init__(options)
         Logger.info("SegmenterAgent inicializado")
     

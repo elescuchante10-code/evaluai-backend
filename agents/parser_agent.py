@@ -5,7 +5,7 @@ import io
 from typing import Optional
 from pathlib import Path
 
-from agent_squad.agents import Agent, AgentOptions
+from agent_squad.agents import Agent
 from agent_squad.types import ConversationMessage, ParticipantRole
 from agent_squad.utils import Logger
 
@@ -15,14 +15,12 @@ try:
     PYPDF2_AVAILABLE = True
 except ImportError:
     PYPDF2_AVAILABLE = False
-    Logger.warn("PyPDF2 no instalado. Soporte PDF limitado.")
 
 try:
     from docx import Document
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
-    Logger.warn("python-docx no instalado. Soporte DOCX limitado.")
 
 
 class DocumentParserAgent(Agent):
@@ -33,7 +31,7 @@ class DocumentParserAgent(Agent):
     
     SUPPORTED_FORMATS = ['.pdf', '.docx', '.txt', '.doc']
     
-    def __init__(self, options: AgentOptions):
+    def __init__(self, options):
         super().__init__(options)
         Logger.info(f"DocumentParserAgent inicializado. Formatos: {self.SUPPORTED_FORMATS}")
     
