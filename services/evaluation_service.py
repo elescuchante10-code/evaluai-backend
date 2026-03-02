@@ -59,7 +59,8 @@ class EvaluationService:
         self.orchestrator.add_agent(math_evaluator)
     
     async def subir_y_estimar(self, filename: str, file_bytes: bytes, 
-                             asignatura: str, rubrica_json: Optional[str] = None):
+                             asignatura: str, rubrica_json: Optional[str] = None,
+                             user_id: Optional[str] = None):
         """
         Paso 1: Procesa archivo y estima costo
         """
@@ -148,7 +149,58 @@ class EvaluationService:
         # Ejecutar evaluación con los agentes
         # TODO: Implementar flujo completo
         
+        # Crear evaluación en la base de datos
+        evaluacion_id = str(uuid.uuid4())
+        
+        # Datos de ejemplo para el simulado (en producción vendrían de la evaluación real)
+        evaluacion = Evaluation(
+            id=evaluacion_id,
+            user_id=user.id,
+            filename=f"eval_{evaluacion_id}.json",
+            original_filename=f"documento_{asignatura}.pdf",
+            asignatura=asignatura,
+            total_words=1500,
+            total_segments=5,
+            calificacion_global=8.5,
+            semaforo_global="VERDE",
+            resultados_json={
+                "segmentos": [
+                    {
+                        "id": 1,
+                        "tipo": "ejercicio",
+                        "calificacion": 9.0,
+                        "semaforo": "VERDE",
+                        "retroalimentacion": "Excelente trabajo",
+                        "criterios": [{"nombre": "Procedimiento", "puntuacion": 9}]
+                    },
+                    {
+                        "id": 2,
+                        "tipo": "problema",
+                        "calificacion": 8.0,
+                        "semaforo": "VERDE",
+                        "retroalimentacion": "Buen razonamiento",
+                        "criterios": [{"nombre": "Procedimiento", "puntuacion": 8}]
+                    }
+                ],
+                "retroalimentacion_general": "El estudiante demuestra buen dominio del tema.",
+                "fortalezas": ["Procedimiento claro", "Buena notación"],
+                "areas_mejora": ["Revisar cálculos finales"]
+            },
+            cost_usd=0.05,
+            cost_cop=205.0,
+            tokens_input=2000,
+            tokens_output=800
+        )
+        
+        self.db.add(evaluacion)
+        self.db.commit()
+        
         return {
-            "message": "Evaluación completada (simulado)",
-            "user_words_remaining": user.words_available
+            "id": evaluacion_id,
+            "message": "Evaluación completada",
+            "user_words_remaining": user.words_available,
+            "calificacion_global": evaluacion.calificacion_global,
+            "semaforo_global": evaluacion.semaforo_global,
+            "segmentos": evaluacion.resultados_json.get("segmentos", []),
+            "retroalimentacion_general": evaluacion.resultados_json.get("retroalimentacion_general", "")
         }

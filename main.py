@@ -15,6 +15,9 @@ load_dotenv()
 # Importar modelos y crear tablas
 from models.database import init_db
 from api.evaluation import router as evaluation_router
+from api.auth import router as auth_router
+from api.documents import router as documents_router
+from api.agent_chat import router as agent_router
 
 
 @asynccontextmanager
@@ -63,7 +66,10 @@ async def health_check():
 
 
 # Incluir routers
+app.include_router(auth_router)
 app.include_router(evaluation_router)
+app.include_router(documents_router)
+app.include_router(agent_router)
 
 
 # Endpoint raíz

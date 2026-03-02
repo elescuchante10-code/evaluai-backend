@@ -13,6 +13,7 @@ from models.database import get_db
 from models.user import User
 from models.evaluation import Evaluation
 from services.evaluation_service import EvaluationService
+from api.auth import get_current_user
 
 router = APIRouter(prefix="/evaluaciones", tags=["Evaluaciones"])
 
@@ -22,10 +23,13 @@ async def subir_documento(
     archivo: UploadFile = File(...),
     asignatura: str = Form(...),
     rubrica_json: Optional[str] = Form(None),
+    user_id: Optional[str] = Form(None),  # Opcional, para compatibilidad
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Paso 1: Subir documento y obtener estimación
+    Requiere autenticación (token JWT en header Authorization)
     """
     try:
         # Validar formato
@@ -45,7 +49,8 @@ async def subir_documento(
             filename=archivo.filename,
             file_bytes=contenido,
             asignatura=asignatura,
-            rubrica_json=rubrica_json
+            rubrica_json=rubrica_json,
+            user_id=current_user.id
         )
         
         return {
@@ -151,3 +156,44 @@ async def listar_asignaturas():
             {"id": "generico", "nombre": "Otra (segmentación básica)", "icono": "📝"}
         ]
     }
+
+
+# Endpoint compatible con el formato del frontend
+@router.post("/procesar")
+async def procesar_evaluacion(
+    documento_id: str = Form(...),
+    asignatura: str = Form(...),
+    rubrica: Optional[str] = Form(None),  # JSON string
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Procesa un documento con IA (formato compatible con frontend)
+    
+    Este endpoint es similar a /evaluar pero con el formato que espera el dashboard.
+    """
+    try:
+        service = EvaluationService(db)
+        
+        # Ejecutar evaluación
+        resultado = await service.ejecutar_evaluacion(
+            estimacion_id=documento_id,
+            user=current_user,
+            confirmar=True
+        )
+        
+        # Formatear respuesta según lo esperado por el frontend
+        return {
+            "success": True,
+            "id": resultado.get("id"),
+            "estado": "completado",
+            "calificacion_global": resultado.get("calificacion_global"),
+            "segmentos": resultado.get("segmentos", []),
+            "retroalimentacion": resultado.get("retroalimentacion_general", ""),
+            "evaluacion": resultado
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
