@@ -125,50 +125,66 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     """
     Registra un nuevo usuario (profesor)
     """
-    # Verificar si el email ya existe
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El email ya está registrado"
+    try:
+        print(f"📝 Intentando registrar usuario: {user_data.email}")
+        
+        # Verificar si el email ya existe
+        existing_user = db.query(User).filter(User.email == user_data.email).first()
+        if existing_user:
+            print(f"⚠️ Email ya registrado: {user_data.email}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El email ya está registrado"
+            )
+        
+        # Crear nuevo usuario
+        new_user = User(
+            id=str(uuid.uuid4()),
+            email=user_data.email,
+            hashed_password=get_password_hash(user_data.password),
+            full_name=user_data.full_name,
+            institution=user_data.institution or "",  # Evitar None
+            plan_type="profesor",
+            word_limit=120000,
+            words_used=0,
+            extra_blocks=0,
+            is_active=True,
+            is_paid=True
         )
-    
-    # Crear nuevo usuario
-    new_user = User(
-        id=str(uuid.uuid4()),
-        email=user_data.email,
-        hashed_password=get_password_hash(user_data.password),
-        full_name=user_data.full_name,
-        institution=user_data.institution,
-        plan_type="profesor",
-        word_limit=120000,
-        words_used=0,
-        extra_blocks=0,
-        is_active=True,
-        is_paid=True  # Por ahora, activo por defecto
-    )
-    
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    # Generar token
-    access_token = create_access_token(data={"sub": new_user.id})
-    
-    return {
-        "success": True,
-        "message": "Usuario registrado exitosamente",
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "id": new_user.id,
-            "email": new_user.email,
-            "full_name": new_user.full_name,
-            "institution": new_user.institution,
-            "words_available": new_user.words_available,
-            "words_used": new_user.words_used
+        
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        print(f"✅ Usuario creado: {new_user.id}")
+        
+        # Generar token
+        access_token = create_access_token(data={"sub": new_user.id})
+        
+        return {
+            "success": True,
+            "message": "Usuario registrado exitosamente",
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": new_user.id,
+                "email": new_user.email,
+                "full_name": new_user.full_name,
+                "institution": new_user.institution,
+                "words_available": new_user.words_available,
+                "words_used": new_user.words_used
+            }
         }
-    }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ ERROR en registro: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno al registrar usuario: {str(e)}"
+        )
 
 
 @router.post("/login", response_model=dict)

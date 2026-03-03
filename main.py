@@ -55,13 +55,23 @@ print(f"🔧 RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'No set')}")
 print(f"🔧 PORT: {os.getenv('PORT', 'No set')}")
 
 # CORS - Permitir frontend local y Vercel
+# En desarrollo, permitimos cualquier origen para facilitar testing
+origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8080",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+]
+
+# Agregar FRONTEND_URL si está configurado
+frontend_url = os.getenv("FRONTEND_URL", "")
+if frontend_url and frontend_url not in origins:
+    origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        os.getenv("FRONTEND_URL", "")
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,6 +98,18 @@ async def root():
         "health": "/health"
     }
 
+
+# Manejador de errores global
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    print(f"❌ ERROR GLOBAL: {str(exc)}")
+    import traceback
+    print(traceback.format_exc())
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Error interno: {str(exc)}"}
+    )
 
 # Incluir routers DESPUÉS de definir healthcheck
 app.include_router(auth_router)
