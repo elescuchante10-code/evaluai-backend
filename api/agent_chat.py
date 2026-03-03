@@ -9,12 +9,28 @@ from sqlalchemy.orm import Session
 from models.database import get_db
 from api.auth import get_current_user
 from models.user import User
-from agents.kimi_agent import KimiAgent
+from agents.kimi_agent import KimiAgent, KimiAgentOptions
+import os
 
 router = APIRouter(prefix="/agente", tags=["Agente IA"])
 
-# Instancia del agente
-agent = KimiAgent()
+# Variable para almacenar la instancia del agente (lazy loading)
+_agent_instance = None
+
+
+def get_agent():
+    """Obtiene o crea la instancia del agente (Lazy Loading)"""
+    global _agent_instance
+    if _agent_instance is None:
+        options = KimiAgentOptions(
+            name="EvaluAI Assistant",
+            description="Agente para profesores",
+            model=os.getenv("KIMI_MODEL", "kimi-k2-5"),
+            api_key=os.getenv("KIMI_API_KEY"),
+            base_url=os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1")
+        )
+        _agent_instance = KimiAgent(options)
+    return _agent_instance
 
 
 class ChatMessage(BaseModel):
@@ -48,7 +64,8 @@ async def chat_con_agente(
         # Construir el prompt del sistema según el contexto
         system_prompt = _construir_system_prompt(message.contexto, current_user)
         
-        # Procesar con el agente
+        # Obtener agente (lazy loading) y procesar
+        agent = get_agent()
         respuesta_agente = await agent.chat(
             mensaje=message.mensaje,
             system_prompt=system_prompt,
@@ -200,6 +217,7 @@ Responde en formato JSON con esta estructura:
   "explicacion": "..."
 }"""
 
+        agent = get_agent()
         respuesta = await agent.chat(
             mensaje=prompt,
             system_prompt="Eres un experto en diseño de rúbricas educativas."
