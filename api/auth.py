@@ -44,7 +44,7 @@ class UserRegister(BaseModel):
 
 class UserLogin(BaseModel):
     email: str
-    password: str
+    password: str = Field(..., max_length=72)  # bcrypt limit
     
     @field_validator('email')
     @classmethod
@@ -72,14 +72,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def get_password_hash(password: str) -> str:
-    """Genera hash de contraseña
-    
-    Nota: bcrypt tiene límite de 72 bytes, truncamos si es necesario
-    """
-    # bcrypt limita a 72 bytes, truncar si la contraseña es muy larga
-    password_bytes = password.encode('utf-8')
-    if len(password_bytes) > 72:
-        password = password_bytes[:72].decode('utf-8', errors='ignore')
+    """Genera hash de contraseña"""
+    # bcrypt tiene límite de 72 bytes, truncamos a 71 para seguridad
+    if len(password.encode('utf-8')) > 71:
+        password = password.encode('utf-8')[:71].decode('utf-8', errors='ignore')
     return pwd_context.hash(password)
 
 
