@@ -17,6 +17,9 @@ if not DATABASE_URL:
     # Detectar si estamos en Railway (tiene variable RAILWAY_ENVIRONMENT)
     if os.getenv("RAILWAY_ENVIRONMENT"):
         # Usar /tmp en Railway (persiste durante la ejecución)
+        # Asegurar que /tmp existe y es escribible
+        if not os.path.exists("/tmp"):
+            os.makedirs("/tmp", exist_ok=True)
         DATABASE_URL = "sqlite:////tmp/evaluai.db"
         print("🚂 Railway detectado - usando SQLite en /tmp")
     else:

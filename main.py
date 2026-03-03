@@ -25,12 +25,18 @@ async def lifespan(app: FastAPI):
     """Eventos de inicio y cierre"""
     # Startup
     print("🚀 Iniciando EvaluAI Profesor...")
+    port = os.getenv("PORT", "8000")
+    print(f"📡 Puerto configurado: {port}")
+    
     try:
         init_db()
         print("✅ Base de datos inicializada")
     except Exception as e:
-        print(f"⚠️ Error inicializando DB: {e}")
-        # No fallar el startup si la DB falla - healthcheck seguirá funcionando
+        # Loguear error exacto para ver en pestaña Logs
+        print(f"❌ ERROR CRÍTICO DB: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+    
     yield
     # Shutdown
     print("👋 Cerrando aplicación...")
@@ -45,10 +51,8 @@ app = FastAPI(
 )
 
 # Log de inicio para debug
-import os
-print(f"🔧 PORT env: {os.getenv('PORT', 'No set - usando 8000')}")
-print(f"🔧 DATABASE_URL: {os.getenv('DATABASE_URL', 'No set - usando SQLite')}")
-print(f"🔧 RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'No set - local')}")
+print(f"🔧 RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'No set')}")
+print(f"🔧 PORT: {os.getenv('PORT', 'No set')}")
 
 # CORS - Permitir frontend local y Vercel
 app.add_middleware(
@@ -64,28 +68,18 @@ app.add_middleware(
 )
 
 
-# Health check
+# Health check - CRÍTICO para Railway
 @app.get("/health")
 async def health_check():
     """Endpoint de salud para Railway"""
-    import os
     return {
         "status": "ok",
         "service": "evaluai-backend",
-        "version": "1.0.0",
-        "environment": os.getenv("RAILWAY_ENVIRONMENT", "local"),
-        "port": os.getenv("PORT", "8000")
+        "version": "1.0.0"
     }
 
 
-# Incluir routers
-app.include_router(auth_router)
-app.include_router(evaluation_router)
-app.include_router(documents_router)
-app.include_router(agent_router)
-
-
-# Endpoint raíz
+# Endpoint raíz - también útil para verificar que corre
 @app.get("/")
 async def root():
     return {
@@ -95,11 +89,10 @@ async def root():
     }
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", 8000)),
-        reload=os.getenv("DEBUG", "false").lower() == "true"
-    )
+# Incluir routers DESPUÉS de definir healthcheck
+app.include_router(auth_router)
+app.include_router(evaluation_router)
+app.include_router(documents_router)
+app.include_router(agent_router)
+
+print("✅ Routers cargados correctamente")
