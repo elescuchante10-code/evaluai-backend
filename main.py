@@ -25,8 +25,12 @@ async def lifespan(app: FastAPI):
     """Eventos de inicio y cierre"""
     # Startup
     print("🚀 Iniciando EvaluAI Profesor...")
-    init_db()
-    print("✅ Base de datos inicializada")
+    try:
+        init_db()
+        print("✅ Base de datos inicializada")
+    except Exception as e:
+        print(f"⚠️ Error inicializando DB: {e}")
+        # No fallar el startup si la DB falla - healthcheck seguirá funcionando
     yield
     # Shutdown
     print("👋 Cerrando aplicación...")
@@ -39,6 +43,12 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Log de inicio para debug
+import os
+print(f"🔧 PORT env: {os.getenv('PORT', 'No set - usando 8000')}")
+print(f"🔧 DATABASE_URL: {os.getenv('DATABASE_URL', 'No set - usando SQLite')}")
+print(f"🔧 RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'No set - local')}")
 
 # CORS - Permitir frontend local y Vercel
 app.add_middleware(
@@ -58,10 +68,13 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     """Endpoint de salud para Railway"""
+    import os
     return {
         "status": "ok",
         "service": "evaluai-backend",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "environment": os.getenv("RAILWAY_ENVIRONMENT", "local"),
+        "port": os.getenv("PORT", "8000")
     }
 
 
