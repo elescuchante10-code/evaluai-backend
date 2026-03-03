@@ -64,6 +64,10 @@ class TokenResponse(BaseModel):
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica una contraseña contra su hash"""
+    # Truncar si es necesario (mismo tratamiento que en get_password_hash)
+    password_bytes = plain_password.encode('utf-8')
+    if len(password_bytes) > 72:
+        plain_password = password_bytes[:72].decode('utf-8', errors='ignore')
     return pwd_context.verify(plain_password, hashed_password)
 
 
