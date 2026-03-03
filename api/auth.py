@@ -7,7 +7,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 import jwt
@@ -28,7 +28,7 @@ ACCESS_TOKEN_EXPIRE_DAYS = 7
 # Schemas
 class UserRegister(BaseModel):
     email: str
-    password: str
+    password: str = Field(..., min_length=6, max_length=72)  # bcrypt limita a 72 bytes
     full_name: str
     institution: Optional[str] = None
     
