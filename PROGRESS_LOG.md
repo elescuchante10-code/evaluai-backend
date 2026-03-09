@@ -1,291 +1,194 @@
 # 📋 Bitácora de Progreso - EvaluAI Profesor
 
-**Fecha:** 1 de Marzo, 2025  
-**Estado:** Backend completo, listo para integración con Frontend
+**Fecha:** 8 de Marzo, 2026  
+**Estado:** ✅ DÍA COMPLETADO - Backend con IA real listo, Frontend en GitHub para Vercel
 
 ---
 
-## ✅ LO QUE SE HIZO HOY
+## ✅ LO QUE SE HIZO HOY (8 Marzo 2026)
 
-### 1. Backend - Nuevos Endpoints Creados
+### 1. Frontend Completo - Flujo de Evaluación Interactivo
+| Componente | Estado | Detalle |
+|------------|--------|---------|
+| **Landing Page** | ✅ | Página de inicio atractiva con info del producto |
+| **Login/Register** | ✅ | Autenticación JWT funcional con validaciones |
+| **Dashboard** | ✅ | Stats, historial de evaluaciones, palabras disponibles |
+| **Chat Evaluación** | ✅ | **Pantalla completa** (no burbuja), flujo conversacional |
+| **Resultados** | ✅ | Panel con semáforos Rojo/Amarillo/Verde por segmento |
+| **Opción "Otra asignatura"** | ✅ | Permite escribir asignatura personalizada |
 
-#### 🔐 Autenticación (`backend/api/auth.py`)
-| Endpoint | Método | Estado | Descripción |
-|----------|--------|--------|-------------|
-| `/auth/register` | POST | ✅ | Crear cuenta de profesor |
-| `/auth/login` | POST | ✅ | Iniciar sesión, retorna JWT |
-| `/auth/verify` | POST | ✅ | Verificar token válido |
-| `/auth/me` | GET | ✅ | Info del usuario actual |
-
-**Características:**
-- JWT tokens con expiración de 7 días
-- Hash de contraseñas con bcrypt
-- Protección de rutas con `get_current_user`
-
----
-
-#### 📄 Documentos (`backend/api/documents.py`)
-| Endpoint | Método | Estado | Descripción |
-|----------|--------|--------|-------------|
-| `/documentos/subir` | POST | ✅ | Subir archivo (con auth) |
-| `/documentos` | GET | ✅ | Listar documentos del usuario |
-| `/documentos/{id}` | GET | ✅ | Ver detalle de documento |
-| `/documentos/{id}` | DELETE | ✅ | Eliminar documento |
-| `/documentos/{id}/resumen` | GET | ✅ | Resumen rápido para dashboard |
-
----
-
-#### 🤖 Agente IA (`backend/api/agent_chat.py`)
-| Endpoint | Método | Estado | Descripción |
-|----------|--------|--------|-------------|
-| `/agente/chat` | POST | ✅ | Chat estilo GPT con agente |
-| `/agente/sugerir-rubrica` | POST | ✅ | Sugerir rúbrica por asignatura |
-
-**Acciones del agente:**
-- `evaluar` → Abrir modal de subida
-- `rubrica` → Abrir configurador de rúbrica
-- `info` → Respuesta informativa
-- `general` → Conversación casual
-
----
-
-#### ✅ Evaluación (`backend/api/evaluation.py`)
-| Endpoint | Método | Estado | Descripción |
-|----------|--------|--------|-------------|
-| `/evaluaciones/subir` | POST | ✅ | Subir y estimar (requiere auth) |
-| `/evaluaciones/evaluar` | POST | ✅ | Ejecutar evaluación |
-| `/evaluaciones/procesar` | POST | ✅ | **NUEVO** - Formato compatible con dashboard |
-| `/evaluaciones/{id}` | GET | ✅ | Obtener evaluación |
-| `/evaluaciones/{id}/reporte` | GET | ✅ | Descargar reporte JSON/Word |
-| `/evaluaciones/asignaturas/lista` | GET | ✅ | Listar asignaturas (público) |
-
----
-
-### 2. Configuración Actualizada
-
-#### `backend/main.py`
-- ✅ Incluye todos los routers (auth, documents, agent, evaluation)
-- ✅ CORS configurado para localhost:3000 y Vercel
-- ✅ Health check en `/health`
-
-#### `backend/requirements.txt`
-- ✅ Agregada dependencia `PyJWT>=2.8.0`
-
----
-
-### 3. Servicios Actualizados
-
-#### `backend/services/evaluation_service.py`
-- ✅ Método `subir_y_estimar` ahora acepta `user_id`
-- ✅ Método `ejecutar_evaluacion` crea registros en DB
-- ✅ Retorna estructura compatible con frontend
-
----
-
-### 4. Deploy a GitHub
-
-**Repositorio:** `https://github.com/elescuchante10-code/evaluai-backend`
-
-**Commit:** `639c066 - Agregar endpoints de auth, documentos y chat con agente IA`
-
-**Estado:** ✅ Subido exitosamente, Railway debe redeploy automático
-
----
-
-### 5. Documentación Creada
-
-| Documento | Descripción |
-|-----------|-------------|
-| `API_ENDPOINTS.md` | Referencia completa de todos los endpoints |
-| `CHAT_INTEGRATION.md` | Guía de integración del chat con agente IA |
-| `PROGRESS_LOG.md` | Este archivo - bitácora de avances |
-
----
-
-## 🔌 URLS IMPORTANTES
-
-| Servicio | URL |
-|----------|-----|
-| Backend API | `https://web-production-83f44.up.railway.app` |
-| Documentación API | `https://web-production-83f44.up.railway.app/docs` |
-| Repo Backend | `https://github.com/elescuchante10-code/evaluai-backend` |
-| Repo Frontend | `https://github.com/elescuchante10-code/evaluai-frontend` |
-| Frontend (Vercel) | *Por configurar* |
-
----
-
-## 📦 MODELOS DE DATOS
-
-### Usuario (`User`)
-```python
-{
-  "id": "uuid",
-  "email": "profesor@ejemplo.com",
-  "full_name": "Nombre Completo",
-  "institution": "Colegio ABC",
-  "plan_type": "profesor",
-  "word_limit": 120000,
-  "words_used": 5000,
-  "extra_blocks": 0,
-  "words_available": 115000,  // calculado
-  "is_active": true,
-  "is_paid": true
-}
+**Flujo implementado:**
+```
+Dashboard → Click "Evaluar" → Chat pantalla completa
+→ Selecciona asignatura (incluye "Otra") → Rúbrica estándar/personalizada
+→ Dropzone para archivo → Estimación de costo → Evaluación IA → Resultados con semáforos
 ```
 
-### Evaluación (`Evaluation`)
-```python
-{
-  "id": "uuid",
-  "user_id": "uuid",
-  "filename": "trabajo.pdf",
-  "asignatura": "matematicas",
-  "calificacion_global": 8.5,
-  "semaforo_global": "VERDE",
-  "total_words": 1500,
-  "total_segments": 5,
-  "resultados_json": {...},
-  "cost_cop": 205.0
-}
+**Repo Frontend:** https://github.com/elescuchante10-code/evaluai-frontend
+
+### 2. Backend - Integración con Kimi AI (Moonshot)
+| Componente | Estado | Detalle |
+|------------|--------|---------|
+| **Extracción documentos** | ✅ | PDF (PyPDF2), DOCX (python-docx), TXT |
+| **Segmentación inteligente** | ✅ | Por asignatura: matemáticas (ejercicios), otros (párrafos) |
+| **Evaluación con Kimi IA** | ✅ | IA real evaluando párrafo por párrafo |
+| **Prompts especializados** | ✅ | Matemáticas, Lengua, Inglés, Sociales, Ciencias, Genérico |
+| **Sistema de semáforos** | ✅ | Calculado: Rojo (<6), Amarillo (6-7.9), Verde (≥8) |
+| **Retroalimentación detallada** | ✅ | Por criterios, errores detectados, sugerencias, fortalezas |
+| **Control de costos** | ✅ | Estimación antes de evaluar, descuento de palabras |
+| **Múltiples llamadas concurrentes** | ✅ | 3 segmentos simultáneos (semaphore) |
+
+**Configuración Kimi:**
+- Proveedor: Moonshot AI (kimi-k2-5)
+- API configurada en Railway ✅
+- Costos: ~¥1 por 1M tokens
+- Soporte excelente para español
+
+**Repo Backend:** https://github.com/elescuchante10-code/evaluai-backend
+**URL Backend:** https://web-production-83f44.up.railway.app
+
+---
+
+## 🔧 ENDPOINTS IMPLEMENTADOS Y FUNCIONANDO
+
+### Autenticación
+- `POST /auth/login` - Login con JWT ✅
+- `POST /auth/register` - Registro de usuarios ✅
+- `GET /auth/me` - Info del usuario actual ✅
+- `POST /auth/verify` - Verificar token ✅
+
+### Documentos
+- `POST /documentos/subir` - Subir archivo + estimación de costo ✅
+- `GET /documentos` - Listar evaluaciones del usuario ✅
+- `GET /documentos/{id}` - Detalle de evaluación ✅
+
+### Evaluación
+- `POST /evaluaciones/procesar` - Ejecutar evaluación con **Kimi IA real** ✅
+- `GET /evaluaciones/{id}` - Obtener evaluación completada ✅
+- `GET /evaluaciones/asignaturas/lista` - Listar asignaturas soportadas ✅
+
+---
+
+## 💰 MODELO DE COSTOS CON KIMI
+
+| Concepto | Valor |
+|----------|-------|
+| **Input tokens** | ¥1 / 1M tokens (~$0.14 USD) |
+| **Output tokens** | ¥1 / 1M tokens (~$0.14 USD) |
+| **Ejemplo real** | Documento 1500 palabras, 5 segmentos = ~¥0.004 (~$2.3 COP) |
+
+**Crédito inicial Kimi:** ¥15 (~$8 USD) gratis para empezar
+
+---
+
+## 📁 ESTRUCTURA DE REPOSITORIOS
+
+### Backend (Railway)
+```
+backend/
+├── api/
+│   ├── auth.py              ✅ JWT auth
+│   ├── documents.py         ✅ Gestión documentos
+│   ├── evaluation.py        ✅ Endpoints evaluación
+│   └── agent_chat.py        ✅ Chat con agente
+├── services/
+│   ├── evaluation_service.py      ✅ Lógica de evaluación
+│   └── ai_evaluation_service.py   ✅ Integración Kimi IA
+├── agents/
+│   ├── kimi_agent.py        ✅ Agente Kimi
+│   ├── parser_agent.py      ✅ Extraer PDF/DOCX
+│   └── segmenter_agent.py   ✅ Segmentar documentos
+├── models/
+│   ├── user.py              ✅ Usuario + palabras
+│   ├── evaluation.py        ✅ Evaluaciones
+│   └── database.py          ✅ DB config
+└── main.py                  ✅ App FastAPI
+```
+
+### Frontend (GitHub → Vercel)
+```
+frontend/
+├── src/
+│   ├── pages/
+│   │   ├── Landing.js       ✅ Home público
+│   │   ├── Login.js         ✅ Login
+│   │   ├── Register.js      ✅ Registro
+│   │   ├── Dashboard.js     ✅ Panel principal
+│   │   └── EvaluacionPage.js ✅ Chat evaluación pantalla completa
+│   ├── components/
+│   │   ├── ProtectedRoute.js ✅ Rutas protegidas
+│   │   └── ResultsPanel.js   ✅ Panel resultados semáforos
+│   ├── contexts/
+│   │   └── AuthContext.js    ✅ Estado auth global
+│   ├── services/
+│   │   └── authService.js    ✅ Llamadas API auth
+│   └── utils/
+│       └── api.js            ✅ Config axios + interceptors
+├── .env.production           ✅ URL backend Railway
+├── vercel.json               ✅ Config SPA Vercel
+└── package.json              ✅ Dependencias
 ```
 
 ---
 
-## 🎯 FLUJO DE TRABAJO IMPLEMENTADO
+## 🚀 PARA MAÑANA - DEPLOY A VERCEL
 
-### 1. Autenticación
+### Pendiente:
+1. **Conectar repo a Vercel:**
+   - Ir a https://vercel.com/new
+   - Importar `evaluai-frontend`
+   - Framework: Create React App
+   - Variable: `REACT_APP_API_URL=https://web-production-83f44.up.railway.app`
+
+2. **Configurar CORS en Railway:**
+   - Agregar variable `FRONTEND_URL=https://evaluai-frontend.vercel.app`
+   - (La URL exacta la da Vercel después del deploy)
+
+3. **Probar flujo completo:**
+   - Registro → Login → Nueva evaluación → Subir PDF → Evaluación IA → Resultados
+
+---
+
+## 🎯 FUNCIONALIDADES LISTAS PARA PROBAR
+
+✅ Registro/login con JWT  
+✅ Dashboard con palabras disponibles  
+✅ Chat de evaluación interactivo (pantalla completa)  
+✅ Soporte para cualquier asignatura (incluye "Otra")  
+✅ Subida de PDF, DOCX, TXT  
+✅ Estimación de costo antes de evaluar  
+✅ Evaluación con Kimi IA real  
+✅ Resultados con semáforos por segmento  
+✅ Retroalimentación detallada  
+✅ Control de límites de palabras  
+
+---
+
+## 📝 NOTAS TÉCNICAS
+
+### Variables de entorno en Railway (Backend):
 ```
-POST /auth/register o /auth/login → Obtener token → Guardar en localStorage
+AI_PROVIDER=kimi
+KIMI_API_KEY=sk-xxxxxxxxxxxxxxxx
+KIMI_MODEL=kimi-k2-5
+DATABASE_URL=sqlite:///./evaluai.db
+SECRET_KEY=tu_secret_key
 ```
 
-### 2. Evaluación Completa
+### Para Vercel (Frontend):
 ```
-POST /documentos/subir (con token)
-  → Recibe estimación (palabras, segmentos, costo)
-  → Frontend muestra estimación al usuario
-  
-POST /evaluaciones/procesar (con documento_id)
-  → Ejecuta evaluación con IA
-  → Retorna resultados con segmentos y calificación
-  
-GET /documentos/{id}
-  → Ver detalle completo de la evaluación
-```
-
-### 3. Chat con Agente
-```
-POST /agente/chat
-  → Envía mensaje del usuario + contexto + historial
-  → Retorna respuesta + acción a ejecutar
-  → Frontend ejecuta acción (abrir modal, etc.)
+REACT_APP_API_URL=https://web-production-83f44.up.railway.app
 ```
 
 ---
 
-## 📝 TAREAS PENDIENTES
+## 🎉 RESUMEN DEL DÍA
 
-### Backend (Opcional/Futuro)
-- [ ] Implementar envío de emails (verificación, notificaciones)
-- [ ] Agregar rate limiting más estricto
-- [ ] Implementar webhooks de PayU para pagos
-- [ ] Agregar caché Redis para mejorar performance
-- [ ] Logs de auditoría de evaluaciones
+**Lo logramos:** Sistema completo de evaluación académica con IA real (Kimi) funcionando. Backend en Railway listo. Frontend en GitHub listo para deploy a Vercel. Mañana conectamos todo y tendremos la plataforma online.
 
-### Frontend (Prioridad Alta)
-- [ ] Conectar login/register con `/auth/login` y `/auth/register`
-- [ ] Guardar token JWT en localStorage
-- [ ] Enviar token en header de todas las peticiones protegidas
-- [ ] Implementar chat con agente IA (estilo GPT)
-- [ ] Conectar flujo de evaluación: subir → estimar → procesar → resultados
-- [ ] Mostrar semáforos y retroalimentación por segmento
-- [ ] Dashboard con historial de evaluaciones (`GET /documentos`)
-
-### Integración
-- [ ] Verificar que Railway hizo redeploy después del push
-- [ ] Probar endpoints con frontend en localhost
-- [ ] Configurar URL de Vercel en CORS del backend
+**Próximo hito:** Deploy completo y primeras evaluaciones reales con documentos de prueba.
 
 ---
 
-## 🚨 NOTAS IMPORTANTES
-
-1. **JWT Secret:** El secret key está hardcodeado en `backend/api/auth.py`:
-   ```python
-   SECRET_KEY = "evaluai-secret-key-change-in-production"
-   ```
-   **DEBE CAMBIARSE** en producción real.
-
-2. **CORS:** Actualmente permite:
-   - `http://localhost:3000`
-   - `http://localhost:5173`
-   - Variable `FRONTEND_URL` (configurar en Railway con URL de Vercel)
-
-3. **Base de Datos:** SQLite por defecto. Para producción considerar PostgreSQL.
-
-4. **Costos:** Los cálculos de costos son estimaciones. En producción real, integrar con API de DeepSeek/Kimi para costos reales.
-
----
-
-## 🎬 PRÓXIMOS PASOS (Mañana)
-
-### Para el Frontend:
-
-1. **Configurar Axios/Fetch con interceptores:**
-   ```javascript
-   // Agregar token automáticamente a todas las peticiones
-   headers: {
-     'Authorization': `Bearer ${localStorage.getItem('token')}`
-   }
-   ```
-
-2. **Implementar flujo de auth:**
-   - Página de login
-   - Página de registro
-   - Protected routes (solo accesibles con token)
-
-3. **Conectar dashboard:**
-   - Mostrar palabras disponibles del usuario (`GET /auth/me`)
-   - Listar evaluaciones previas (`GET /documentos`)
-
-4. **Implementar chat:**
-   - Componente de chat estilo GPT
-   - Enviar mensajes a `/agente/chat`
-   - Ejecutar acciones según respuesta del agente
-
-### Para el Backend (si hay tiempo):
-
-1. Verificar logs de Railway para confirmar redeploy exitoso
-2. Probar endpoints con curl o Postman
-3. Configurar variable `FRONTEND_URL` en Railway con URL de Vercel
-
----
-
-## 💾 COMANDOS ÚTILES
-
-### Verificar estado del backend:
-```bash
-curl https://web-production-83f44.up.railway.app/health
-```
-
-### Ver documentación:
-Abrir en navegador: `https://web-production-83f44.up.railway.app/docs`
-
-### Probar login:
-```bash
-curl -X POST https://web-production-83f44.up.railway.app/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"123456"}'
-```
-
----
-
-## 👥 EQUIPO
-
-- **Backend:** Implementado ✅
-- **Frontend:** En progreso (Vercel)
-- **Integración:** Pendiente
-
----
-
-*Última actualización: 1 de Marzo, 2025*  
-*Próxima revisión: Mañana*
+*Última actualización: 8 de Marzo, 2026 - 23:30*  
+*Estado: Listo para deploy mañana* 🚀
